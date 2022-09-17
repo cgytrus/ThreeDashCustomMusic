@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net471</TargetFramework>
     <AssemblyName>ThreeDashCustomMusic</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Company>https://github.com/cgytrus/ThreeDashCustomMusic</Company>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>10.0</LangVersion>
