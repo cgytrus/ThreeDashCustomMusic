@@ -20,6 +20,8 @@ public static class CustomMusic {
         ".acc", ".aiff", ".it", ".mod", ".mp2", ".mp3", ".ogg", ".s3m", ".wav", ".xm", ".xma", ".vag"
     };
     public static AudioClip? currentSong { get; private set; }
+    private static string _currentSongPath = string.Empty;
+    private static DateTime _currentSongFileTime = DateTime.MinValue;
 
     private static ManualLogSource? _logger;
 
@@ -32,10 +34,18 @@ public static class CustomMusic {
 
     public static void LoadCurrentSong(string path) {
         _logger?.LogInfo($"Loading custom song at {path}");
-        currentSong = null;
 
         if(!File.Exists(path)) {
+            currentSong = null;
+            _currentSongPath = string.Empty;
+            _currentSongFileTime = DateTime.MinValue;
             _logger?.LogError("File does not exist");
+            return;
+        }
+
+        DateTime writeTime = new FileInfo(path).LastWriteTimeUtc;
+        if(_currentSongPath == path && writeTime == _currentSongFileTime) {
+            _logger?.LogInfo($"File didn't change, not reloading song (last modification time: {writeTime})");
             return;
         }
 
@@ -43,6 +53,9 @@ public static class CustomMusic {
         string extension = Path.GetExtension(path);
         AudioType audioType = ExtensionToAudioType(extension);
         if(audioType == AudioType.UNKNOWN) {
+            currentSong = null;
+            _currentSongPath = string.Empty;
+            _currentSongFileTime = DateTime.MinValue;
             _logger?.LogError("Unknown audio type");
             return;
         }
@@ -52,11 +65,16 @@ public static class CustomMusic {
         while(!requestOperation.isDone) { }
 
         if(request.result != UnityWebRequest.Result.Success) {
+            currentSong = null;
+            _currentSongPath = string.Empty;
+            _currentSongFileTime = DateTime.MinValue;
             _logger?.LogError(request.error);
             return;
         }
 
         currentSong = DownloadHandlerAudioClip.GetContent(request);
+        _currentSongPath = path;
+        _currentSongFileTime = writeTime;
     }
 
     public static AudioType ExtensionToAudioType(string extension) => extension switch {
